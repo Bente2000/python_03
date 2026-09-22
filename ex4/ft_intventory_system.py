@@ -2,43 +2,59 @@
 
 import sys
 
-class TooManyValues: # sword::3 == syntax error == Exception
+class KeyError(Exception):
     pass
 
-class NotEnoughValues: # sword: 3 == syntax error == Exception
+class ValuesError(Exception):
     pass
 
-def value_check(arg: str) -> None: # saus
-    key, value = arg.split(':')
-    number = 0
-    if  number is int(key):
-        raise TypeError
+class SyntaxError(Exception):
+    pass
+
+def check_syntax(args: list) -> None:
+    i = 1
+    j = 0
+    while i < len(args):
+        input = args[i].partition(':')
+        if input[0] == "":
+            raise KeyError("No key found")
+        if input[1] == "":
+            raise SyntaxError(f"Invalid parameter: {input[0]}")
+        if input[2] == "":
+            raise ValuesError("No value found")
+        while j < len(input[2]):
+            if input[2][j] == ':':
+                raise SyntaxError("Extra delimeter")
+            j += 1
+        i += 1
+
+
 
 def display_inventory(args: list) -> None:
     i = 1
     keys = []
     values = []
     try:
+        check_syntax(args) # waarom kan deze ook boven try
         while i < len(args):
             key, value = args[i].split(':')
+            if i == 1:
+                dic = {key: int(value)}
+            else:
+                dic.update({key: int(value)})
             keys.append(key)
             values.append(int(value))
             i += 1
-    except TypeError as e: # hoezo deze niet bij 3:abc ??
-        print(f"Caught TypeError: {e}")
-    #except Exception as e:
-    #    print(f"Caught Exception: {e}")
+    except KeyError as e:
+        print(f"KeyError found: {e}")
+    except SyntaxError as e:
+        print(f"SyntaxError found: {e}")
+    except ValuesError as e:
+        print(f"ValuesError found: {e}")
     except ValueError as e:
-        print(f"Caught ValueError: {e}")
-    print(keys)
-    print(values)
+        print(f"Quantity error: {e}")
+    #print(f"Got inventory: {dic}") # wil nog doorgaan na 'hello' exception
 
 if __name__ == "__main__":
     print("=== Inventory System Analysis ===")
-    args = sys.argv
-    print(args)
-    display_inventory(args)
-    #display_items()
-    #display_percentages()
-    #display_abundance()
-    #update_inventory()
+    display_inventory(sys.argv)
